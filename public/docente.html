@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#14532d">
+  <title>Panel Docente</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128218;</text></svg>">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="/">
+        <span class="brand__mark" aria-hidden="true">ERC</span>
+        <span>
+          <span class="brand__title" data-school-name>Escuela</span><br>
+          <span class="brand__subtitle" data-school-cycle>Ciclo escolar</span>
+        </span>
+      </a>
+      <div class="topbar__actions">
+        <span class="topbar__user hidden" id="teacher-name"></span>
+        <select id="group-select" class="hidden" style="width:auto;min-width:150px;"></select>
+        <button class="btn btn--light btn--sm hidden" id="btn-logout">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LOGIN -->
+  <section class="shell access" id="view-login">
+    <div class="access__card">
+      <div class="access__icon" aria-hidden="true">&#128274;</div>
+      <h2 class="center">Acceso del personal docente</h2>
+      <p class="center muted small">Ingrese con su correo institucional.</p>
+      <div class="alert alert--error hidden" id="login-error"></div>
+      <form id="form-login" novalidate>
+        <div class="field">
+          <label for="login-email">Correo electronico</label>
+          <input type="email" id="login-email" autocomplete="username" required placeholder="maestra@escuela.mx">
+        </div>
+        <div class="field">
+          <label for="login-password">Contrasena</label>
+          <input type="password" id="login-password" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn--primary btn--block" type="submit" id="btn-login">Iniciar sesion</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- PANEL -->
+  <main class="shell hidden" id="view-panel">
+    <div class="tabs" role="tablist">
+      <button class="tab is-active" data-panel="panel-registro" role="tab">Registro diario</button>
+      <button class="tab" data-panel="panel-indicadores" role="tab">Indicadores del grupo</button>
+      <button class="tab" data-panel="panel-alumnos" role="tab">Alumnos y codigos</button>
+      <button class="tab" data-panel="panel-avisos" role="tab">Avisos</button>
+    </div>
+
+    <!-- REGISTRO DIARIO -->
+    <section id="panel-registro">
+      <div class="card">
+        <div class="card__head">
+          <div>
+            <h2>Registro diario</h2>
+            <p class="muted small" style="margin:0;" id="registro-meta"></p>
+          </div>
+          <span class="spacer"></span>
+          <div class="inline-form">
+            <div class="field">
+              <label for="record-date">Fecha</label>
+              <input type="date" id="record-date">
+            </div>
+            <button class="btn btn--ghost btn--sm" id="btn-load-day">Cargar dia</button>
+          </div>
+        </div>
+
+        <div class="inline-form" style="margin-bottom:14px;">
+          <div class="field">
+            <label for="bulk-preset">Aplicar a todo el grupo</label>
+            <select id="bulk-preset">
+              <option value="">Seleccionar accion rapida...</option>
+              <option value="todos-bien">Todos presentes, tarea entregada, conducta excelente</option>
+              <option value="sin-tarea">Marcar dia sin tarea asignada</option>
+              <option value="limpiar">Restablecer valores por omision</option>
+            </select>
+          </div>
+          <button class="btn btn--ghost btn--sm" id="btn-apply-preset">Aplicar</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Alumno</th>
+                <th>Asistencia</th>
+                <th>Tarea</th>
+                <th>Trabajo en clase</th>
+                <th>Conducta</th>
+                <th>Observaciones</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="records-body"></tbody>
+          </table>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap;">
+          <button class="btn btn--primary" id="btn-save-day">Guardar registros del dia</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- INDICADORES -->
+    <section id="panel-indicadores" class="hidden">
+      <div class="card">
+        <div class="card__head">
+          <h2>Indicadores del grupo</h2>
+          <span class="spacer"></span>
+          <div class="inline-form">
+            <div class="field">
+              <label for="stats-from">Desde</label>
+              <input type="date" id="stats-from">
+            </div>
+            <div class="field">
+              <label for="stats-to">Hasta</label>
+              <input type="date" id="stats-to">
+            </div>
+            <button class="btn btn--ghost btn--sm" id="btn-load-stats">Actualizar</button>
+          </div>
+        </div>
+        <div class="grid grid--stats" id="stats-totals"></div>
+        <h3 style="margin-top:22px;">Alumnos que requieren atencion</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Alumno</th>
+                <th>Registros</th>
+                <th>Ausencias</th>
+                <th>Tareas sin entregar</th>
+                <th>Conducta por mejorar</th>
+              </tr>
+            </thead>
+            <tbody id="stats-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALUMNOS -->
+    <section id="panel-alumnos" class="hidden">
+      <div class="card">
+        <h2>Alta de alumno</h2>
+        <form class="inline-form" id="form-student">
+          <div class="field" style="flex:2 1 220px;">
+            <label for="student-name">Nombre completo</label>
+            <input id="student-name" required placeholder="Nombre y apellidos">
+          </div>
+          <div class="field" style="flex:1 1 160px;">
+            <label for="guardian-name">Padre o tutor</label>
+            <input id="guardian-name" placeholder="Opcional">
+          </div>
+          <div class="field" style="flex:1 1 140px;">
+            <label for="guardian-phone">Telefono</label>
+            <input id="guardian-phone" placeholder="Opcional">
+          </div>
+          <button class="btn btn--primary" type="submit">Agregar alumno</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <h2>Alumnos y codigos de acceso</h2>
+          <span class="spacer"></span>
+          <button class="btn btn--ghost btn--sm" id="btn-print-codes">Imprimir codigos</button>
+        </div>
+        <p class="muted small">
+          Entregue el codigo unicamente al padre o tutor del alumno. Si un codigo se pierde o se comparte por error,
+          use "Regenerar" para invalidarlo y emitir uno nuevo.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Alumno</th>
+                <th>Codigo</th>
+                <th>Padre o tutor</th>
+                <th>Telefono</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="students-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- AVISOS -->
+    <section id="panel-avisos" class="hidden">
+      <div class="card">
+        <h2>Publicar aviso para padres</h2>
+        <form id="form-announcement">
+          <div class="field">
+            <label for="announcement-title">Titulo</label>
+            <input id="announcement-title" required maxlength="120" placeholder="Ej. Junta de padres el viernes">
+          </div>
+          <div class="field">
+            <label for="announcement-body">Mensaje</label>
+            <textarea id="announcement-body" required maxlength="2000"
+                      placeholder="Escriba el aviso que veran todos los padres del grupo."></textarea>
+          </div>
+          <div class="inline-form">
+            <div class="field" style="flex:0 0 200px;">
+              <label for="announcement-priority">Prioridad</label>
+              <select id="announcement-priority">
+                <option value="informativa">Informativa</option>
+                <option value="importante">Importante</option>
+                <option value="urgente">Urgente</option>
+              </select>
+            </div>
+            <button class="btn btn--primary" type="submit">Publicar aviso</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Avisos publicados</h2>
+        <div id="announcements-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/js/docente.js"></script>
+</body>
+</html>

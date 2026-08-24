@@ -1,0 +1,34 @@
+# Sobrecarga para desarrollo con sincronizacion de codigo en vivo.
+# Uso:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml watch
+#
+# Se usa Compose Watch en lugar de un bind mount con "node --watch" porque en Windows y macOS
+# los eventos inotify no cruzan el montaje del host: el proceso dentro del contenedor nunca ve
+# el cambio. Aqui es Docker quien vigila el proyecto y copia los archivos al contenedor.
+
+services:
+  db:
+    # Solo en desarrollo se publica el puerto, para conectar un cliente SQL desde el equipo.
+    ports:
+      - '5432:5432'
+
+  app:
+    environment:
+      NODE_ENV: development
+    # Compose Watch escribe dentro del contenedor, asi que la raiz no puede ser de solo lectura.
+    read_only: false
+    develop:
+      watch:
+        # El servidor se reinicia solo cuando cambia codigo de Node.
+        - action: sync+restart
+          path: ./src
+          target: /app/src
+        # El cliente estatico se sirve desde disco: basta con copiarlo, sin reiniciar.
+        - action: sync
+          path: ./public
+          target: /app/public
+        # Un cambio de dependencias exige reconstruir la imagen.
+        - action: rebuild
+          path: ./package.json
+        - action: rebuild
+          path: ./package-lock.json

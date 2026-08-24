@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#14532d">
+  <title>Portal de Padres</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128106;</text></svg>">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="/">
+        <span class="brand__mark" aria-hidden="true">ERC</span>
+        <span>
+          <span class="brand__title" data-school-name>Escuela</span><br>
+          <span class="brand__subtitle" data-school-cycle>Ciclo escolar</span>
+        </span>
+      </a>
+      <div class="topbar__actions">
+        <span class="topbar__user hidden" id="parent-name"></span>
+        <button class="btn btn--light btn--sm hidden" id="btn-print">Imprimir</button>
+        <button class="btn btn--light btn--sm hidden" id="btn-export">Descargar CSV</button>
+        <button class="btn btn--light btn--sm hidden" id="btn-logout">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ACCESO CON CODIGO -->
+  <section class="shell access" id="view-access">
+    <div class="access__card">
+      <div class="access__icon" aria-hidden="true">&#128273;</div>
+      <h2 class="center">Portal de padres de familia</h2>
+      <p class="center muted small">
+        Escriba el codigo de acceso de su hijo(a). Si no lo tiene o lo perdio, solicitelo a la maestra del grupo.
+      </p>
+      <div class="alert alert--error hidden" id="access-error"></div>
+      <form id="form-access" novalidate>
+        <div class="field">
+          <label for="access-code">Codigo de acceso</label>
+          <input class="code-input" id="access-code" name="accessCode" maxlength="10"
+                 autocomplete="off" inputmode="text" spellcheck="false" placeholder="ABC123" required>
+        </div>
+        <button class="btn btn--primary btn--block" type="submit" id="btn-access">Consultar reporte</button>
+      </form>
+      <p class="center small muted" style="margin: 16px 0 0;">
+        La informacion mostrada es confidencial y corresponde unicamente a su hijo(a).
+      </p>
+    </div>
+  </section>
+
+  <!-- REPORTE -->
+  <main class="shell hidden" id="view-report">
+    <div class="card" style="margin-top: 20px;">
+      <div class="card__head">
+        <div>
+          <h1 id="student-name">Alumno</h1>
+          <p class="muted small" id="student-meta" style="margin: 0;"></p>
+        </div>
+        <div class="spacer"></div>
+        <div id="pending-badge"></div>
+      </div>
+
+      <div class="grid grid--2">
+        <div class="grid grid--stats" id="stats"></div>
+        <div class="center">
+          <div class="score-ring" id="score-ring">
+            <div class="score-ring__text">
+              <div class="score-ring__value" id="score-value">--</div>
+              <div class="score-ring__label">Desempeno</div>
+            </div>
+          </div>
+          <p class="small muted" style="margin: 12px 0 0;" id="score-hint"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__head">
+        <h2>Tendencia reciente</h2>
+        <span class="spacer"></span>
+        <span class="small muted">Ultimos dias registrados</span>
+      </div>
+      <div id="trend"></div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab is-active" data-panel="panel-diario" role="tab">Reporte diario</button>
+      <button class="tab" data-panel="panel-avisos" role="tab">Avisos de la maestra</button>
+    </div>
+
+    <section id="panel-diario">
+      <div class="card">
+        <div class="card__head">
+          <h2>Reporte diario</h2>
+          <span class="spacer"></span>
+          <div class="inline-form">
+            <div class="field">
+              <label for="filter-from">Desde</label>
+              <input type="date" id="filter-from">
+            </div>
+            <div class="field">
+              <label for="filter-to">Hasta</label>
+              <input type="date" id="filter-to">
+            </div>
+            <button class="btn btn--ghost btn--sm" id="btn-filter">Filtrar</button>
+            <button class="btn btn--ghost btn--sm" id="btn-clear-filter">Limpiar</button>
+          </div>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <button class="btn btn--ghost btn--sm" id="btn-seen-all">Marcar todo como leido</button>
+        </div>
+        <ul class="timeline" id="timeline"></ul>
+      </div>
+    </section>
+
+    <section id="panel-avisos" class="hidden">
+      <div class="card">
+        <h2>Avisos del grupo</h2>
+        <div id="announcements"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/js/padres.js"></script>
+</body>
+</html>

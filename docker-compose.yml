@@ -1,0 +1,144 @@
+name: control-seguimiento
+
+# Bloques reutilizables: los tres servicios de Node comparten imagen, variables y ajustes.
+x-db-env: &db-env
+  POSTGRES_HOST: db
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: ${POSTGRES_DB:-control_seguimiento}
+  POSTGRES_USER: ${POSTGRES_USER:-seguimiento}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-seguimiento_local}
+
+x-app-env: &app-env
+  <<: *db-env
+  JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET en el archivo .env}
+  SESSION_HOURS: ${SESSION_HOURS:-12}
+  SEED_TEACHER_NAME: ${SEED_TEACHER_NAME:-Maestra Titular}
+  SEED_TEACHER_EMAIL: ${SEED_TEACHER_EMAIL:-maestra@escuela.mx}
+  SEED_TEACHER_PASSWORD: ${SEED_TEACHER_PASSWORD:-Escuela2026!}
+  SCHOOL_NAME: ${SCHOOL_NAME:-Escuela Ramon Corona}
+  SCHOOL_CYCLE: ${SCHOOL_CYCLE:-2026 - 2027}
+
+# Una sola etiqueta de imagen para app, seed y migrate: se construye una vez y se reutiliza.
+x-node-image: &node-image
+  image: control-seguimiento:local
+  build:
+    context: .
+    target: runtime
+
+# Sin rotacion, los registros de un contenedor de larga vida llenan el disco del servidor.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+# La aplicacion no escribe en disco: puede correr con raiz de solo lectura y sin capacidades.
+x-hardening: &hardening
+  read_only: true
+  tmpfs:
+    - /tmp
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cs-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-control_seguimiento}
+      POSTGRES_USER: ${POSTGRES_USER:-seguimiento}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-seguimiento_local}
+      # musl (Alpine) no implementa locales del sistema: un LANG=es_MX.utf8 se acepta pero
+      # ordena por bytes ("Angel" caeria despues de "Zulema"). ICU si ordena en espanol.
+      # Solo aplica al crear el volumen; para una base existente vea el README.
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale-provider=icu --icu-locale=es-MX --locale=C.UTF-8'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-seguimiento} -d ${POSTGRES_DB:-control_seguimiento}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+    networks: [cs-net]
+
+  app:
+    <<: [*node-image, *hardening]
+    container_name: cs-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+    ports:
+      - '${PORT:-3000}:3000'
+    # El cierre ordenado del servidor espera hasta 10 s; se le da margen antes del SIGKILL.
+    stop_grace_period: 15s
+    logging: *logging
+    networks: [cs-net]
+
+  # Aplica las migraciones pendientes sin arrancar el servidor. Util cuando se despliega
+  # con RUN_MIGRATIONS=false para controlar el momento del cambio de esquema:
+  #   docker compose run --rm migrate
+  migrate:
+    <<: [*node-image, *hardening]
+    profiles: [tools]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+      NODE_ENV: production
+    entrypoint: ['dumb-init', '--']
+    command: ['node', 'src/db/migrate.js']
+    logging: *logging
+    networks: [cs-net]
+
+  # Carga el grupo, los alumnos y la cuenta docente inicial. Se ejecuta una vez:
+  #   docker compose run --rm seed
+  seed:
+    <<: [*node-image, *hardening]
+    profiles: [tools]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+      NODE_ENV: production
+    entrypoint: ['dumb-init', '--']
+    command: ['node', 'src/db/seed.js']
+    logging: *logging
+    networks: [cs-net]
+
+  # Interfaz web opcional para inspeccionar la base de datos:
+  #   docker compose --profile tools up -d adminer
+  adminer:
+    image: adminer:latest
+    profiles: [tools]
+    restart: unless-stopped
+    depends_on: [db]
+    ports:
+      - '8080:8080'
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+      ADMINER_DESIGN: pepa-linha
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+    networks: [cs-net]
+
+volumes:
+  pgdata:
+
+networks:
+  cs-net:
+    driver: bridge

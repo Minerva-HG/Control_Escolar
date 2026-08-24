@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escuela Ramón Corona - Registro Escolar</title>
+    <style>
+        :root {
+            --primary: #1b5e20;
+            --primary-light: #e8f5e9;
+            --accent: #2e7d32;
+            --bg: #f4f6f8;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: #fff;
+            color: var(--primary);
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Tabla Docente */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        tr:nth-child(even) { background-color: #f9f9f9; }
+
+        select, input[type="date"] {
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            float: right;
+        }
+
+        /* Vista Padres */
+        .login-box {
+            max-width: 400px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .login-box input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            text-align: center;
+            border: 2px solid var(--primary);
+            border-radius: 5px;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Escuela Ramón Corona</h1>
+        <p>Control de Seguimiento Diario - Ciclo Escolar 2026 - 2027</p>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchMode('docente')">Modo Maestra</button>
+        <button class="tab-btn" onclick="switchMode('padres')">Consulta Padres de Familia</button>
+    </div>
+
+    <!-- VISTA MAESTRA -->
+    <div id="view-docente" class="card">
+        <h2>Panel de Registro Diario</h2>
+        <div>
+            <label><b>Seleccionar Fecha:</b> </label>
+            <input type="date" id="fecha-registro">
+            <label style="margin-left: 20px;"><b>Día:</b> </label>
+            <select id="dia-semana">
+                <option>Lunes</option>
+                <option>Martes</option>
+                <option>Miércoles</option>
+                <option>Jueves</option>
+                <option>Viernes</option>
+            </select>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Alumno</th>
+                        <th>Código PIN</th>
+                        <th>Tareas</th>
+                        <th>Trabajos</th>
+                        <th>Conducta</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-alumnos">
+                    <!-- Filas generadas dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        <button class="btn-save" onclick="guardarRegistro()">Guardar Registros</button>
+        <div style="clear: both;"></div>
+    </div>
+
+    <!-- VISTA PADRES DE FAMILIA -->
+    <div id="view-padres" class="card hidden">
+        <div id="portal-login" class="login-box">
+            <h3>Portal de Consulta para Padres</h3>
+            <p>Ingrese el código PIN único de su hijo(a):</p>
+            <input type="password" id="pin-input" placeholder="Ej. 1001" maxlength="4">
+            <br>
+            <button class="tab-btn active" onclick="consultarAlumno()">Ingresar</button>
+        </div>
+
+        <div id="portal-resultados" class="hidden">
+            <h2 id="nombre-alumno-reporte"></h2>
+            <p><b>Historial del Ciclo Escolar 2026 - 2027</b></p>
+            <button class="tab-btn" onclick="cerrarSesionPadre()" style="float: right;">Salir</button>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Día</th>
+                            <th>Tareas</th>
+                            <th>Trabajos</th>
+                            <th>Conducta</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historial-alumno">
+                        <!-- Reporte de registros del alumno -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lista de 26 Alumnos con PIN asignado automáticamente
+        const listaAlumnos = [
+            "Diego Ahumada", "Gael Alexander", "Diego Sebastián", "Cristofer Tadeo",
+            "Abraham Mateo", "Zarayry Noemi", "Magaly", "Ana Victoria",
+            "Barbara Eunice", "Sheyla Itzel", "Dayana Maite", "Alexis Damián",
+            "Eva Romina", "Daniel López", "Luis Alonso", "Ambar Isabelle",
+            "Marco Antonio", "Lydia Vanessa", "Keylor Damián", "Ximena Danae",
+            "Tania Esmeralda", "Salvador Román", "Esmeralda", "Sebastián Valdez",
+            "Ashley Ximena", "Jade"
+        ];
+
+        // Inicializar datos de alumnos con PIN (1001 - 1026)
+        let alumnosData = listaAlumnos.map((nombre, index) => ({
+            id: index + 1,
+            nombre: nombre,
+            pin: (1001 + index).toString()
+        }));
+
+        // Base de datos local (localStorage)
+        let historialRegistros = JSON.parse(localStorage.getItem('historial_2026_2027')) || [];
+
+        // Cargar vista maestra al iniciar
+        window.onload = function() {
+            document.getElementById('fecha-registro').valueAsDate = new Date();
+            renderTablaMaestra();
+        };
+
+        function switchMode(mode) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if(mode === 'docente') {
+                document.getElementById('view-docente').classList.remove('hidden');
+                document.getElementById('view-padres').classList.add('hidden');
+                event.target.classList.add('active');
+            } else {
+                document.getElementById('view-docente').classList.add('hidden');
+                document.getElementById('view-padres').classList.remove('hidden');
+                event.target.classList.add('active');
+            }
+        }
+
+        function renderTablaMaestra() {
+            const tbody = document.getElementById('tabla-alumnos');
+            tbody.innerHTML = '';
+            
+            alumnosData.forEach(alumno => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${alumno.id}</td>
+                    <td style="text-align: left;"><b>${alumno.nombre}</b></td>
+                    <td><code>${alumno.pin}</code></td>
+                    <td>
+                        <select id="tarea-${alumno.id}">
+                            <option value="Entregó">Entregó</option>
+                            <option value="No entregó">No entregó</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select id="trabajo-${alumno.id}">
+                            <option value="Trabajó">Trabajó</option>
+                            <option value="No trabajó">No trabajó</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select id="conducta-${alumno.id}">
+                            <option value="Excelente">Excelente</option>
+                            <option value="Buena">Buena</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Debe mejorar">Debe mejorar</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function guardarRegistro() {
+            const fecha = document.getElementById('fecha-registro').value;
+            const dia = document.getElementById('dia-semana').value;
+
+            if(!fecha) {
+                alert("Por favor seleccione una fecha.");
+                return;
+            }
+
+            alumnosData.forEach(alumno => {
+                const registro = {
+                    alumnoId: alumno.id,
+                    fecha: fecha,
+                    dia: dia,
+                    tarea: document.getElementById(`tarea-${alumno.id}`).value,
+                    trabajo: document.getElementById(`trabajo-${alumno.id}`).value,
+                    conducta: document.getElementById(`conducta-${alumno.id}`).value
+                };
+                historialRegistros.push(registro);
+            });
+
+            localStorage.setItem('historial_2026_2027', JSON.stringify(historialRegistros));
+            alert("¡Registros guardados correctamente para la fecha " + fecha + "!");
+        }
+
+        function consultarAlumno() {
+            const pin = document.getElementById('pin-input').value;
+            const alumno = alumnosData.find(a => a.pin === pin);
+
+            if(!alumno) {
+                alert("Código PIN incorrecto. Verifique con la maestra.");
+                return;
+            }
+
+            document.getElementById('portal-login').classList.add('hidden');
+            document.getElementById('portal-resultados').classList.remove('hidden');
+            document.getElementById('nombre-alumno-reporte').innerText = "Reporte de: " + alumno.nombre;
+
+            const tbodyHistorial = document.getElementById('historial-alumno');
+            tbodyHistorial.innerHTML = '';
+
+            const registrosAlumno = historialRegistros.filter(r => r.alumnoId === alumno.id);
+
+            if(registrosAlumno.length === 0) {
+                tbodyHistorial.innerHTML = '<tr><td colspan="5">Aún no hay registros cargados para este alumno.</td></tr>';
+                return;
+            }
+
+            registrosAlumno.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.fecha}</td>
+                    <td>${r.dia}</td>
+                    <td>${r.tarea}</td>
+                    <td>${r.trabajo}</td>
+                    <td>${r.conducta}</td>
+                `;
+                tbodyHistorial.appendChild(tr);
+            });
+        }
+
+        function cerrarSesionPadre() {
+            document.getElementById('pin-input').value = '';
+            document.getElementById('portal-login').classList.remove('hidden');
+            document.getElementById('portal-resultados').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

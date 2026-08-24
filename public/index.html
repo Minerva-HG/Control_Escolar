@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Plataforma de control y seguimiento escolar diario para padres de familia y docentes.">
+  <meta name="theme-color" content="#14532d">
+  <title>Control de Seguimiento Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127979;</text></svg>">
+</head>
+<body>
+
+  <header class="hero">
+    <div class="hero__inner">
+      <span class="hero__badge" data-school-cycle>Ciclo escolar</span>
+      <h1 data-school-name>Escuela</h1>
+      <p>Control de seguimiento diario: tareas, trabajo en clase, conducta y asistencia,
+         al alcance de los padres de familia todos los dias.</p>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="portals">
+      <a class="portal" href="/padres.html">
+        <div class="portal__icon" aria-hidden="true">&#128106;</div>
+        <div class="portal__title">Padres de familia</div>
+        <p class="portal__text">
+          Consulte el reporte diario de su hijo(a) con el codigo de acceso que le entrego la maestra.
+          Revise avisos, descargue el historial y confirme que ya leyo el reporte.
+        </p>
+        <span class="btn btn--primary btn--block">Entrar con mi codigo</span>
+      </a>
+
+      <a class="portal" href="/docente.html">
+        <div class="portal__icon" aria-hidden="true">&#128218;</div>
+        <div class="portal__title">Personal docente</div>
+        <p class="portal__text">
+          Registre el pase de lista del dia en un solo paso, administre a sus alumnos y codigos de acceso,
+          publique avisos y revise indicadores del grupo.
+        </p>
+        <span class="btn btn--ghost btn--block">Iniciar sesion</span>
+      </a>
+    </div>
+
+    <section class="features">
+      <article class="feature">
+        <div class="feature__icon" aria-hidden="true">&#128202;</div>
+        <h3>Indicadores claros</h3>
+        <p>Porcentajes de asistencia, cumplimiento de tareas y conducta, con tendencia de los ultimos dias.</p>
+      </article>
+      <article class="feature">
+        <div class="feature__icon" aria-hidden="true">&#128274;</div>
+        <h3>Acceso privado</h3>
+        <p>Cada familia usa un codigo unico y solo puede ver la informacion de su propio hijo(a).</p>
+      </article>
+      <article class="feature">
+        <div class="feature__icon" aria-hidden="true">&#128241;</div>
+        <h3>Pensado para el celular</h3>
+        <p>Funciona en cualquier telefono o computadora, sin instalar nada y sin registros complicados.</p>
+      </article>
+    </section>
+  </main>
+
+  <script type="module">
+    import { loadMeta, applySchoolBranding } from '/js/core.js';
+    loadMeta().then(applySchoolBranding).catch(() => {});
+  </script>
+</body>
+</html>
