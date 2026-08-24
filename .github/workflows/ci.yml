@@ -110,7 +110,7 @@ jobs:
 
       # Se etiqueta igual que en docker-compose.yml para que la pila reutilice esta imagen.
       - name: Construir la imagen
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           target: runtime
