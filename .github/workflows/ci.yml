@@ -19,7 +19,7 @@ jobs:
     name: Lint y pruebas unitarias
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
@@ -61,7 +61,7 @@ jobs:
       SEED_TEACHER_PASSWORD: Escuela2026!
       PORT: '3000'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
@@ -104,7 +104,7 @@ jobs:
       SEED_TEACHER_EMAIL: maestra@escuela.mx
       SEED_TEACHER_PASSWORD: Escuela2026!
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: docker/setup-buildx-action@v3
 
