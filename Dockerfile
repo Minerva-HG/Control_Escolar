@@ -1,5 +1,5 @@
 # ---------- Etapa 1: dependencias de produccion ----------
-FROM node:22-alpine AS deps
+FROM node:26-alpine AS deps
 
 WORKDIR /app
 COPY package.json package-lock.json* ./
@@ -7,7 +7,7 @@ RUN if [ -f package-lock.json ]; then npm ci --omit=dev --no-audit --no-fund; el
     && npm cache clean --force
 
 # ---------- Etapa 2: imagen final ----------
-FROM node:22-alpine AS runtime
+FROM node:26-alpine AS runtime
 
 ENV NODE_ENV=production \
     PORT=3000 \
